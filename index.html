@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Frame App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;600&family=Noto+Serif+JP:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Preview Area -->
+    <main class="preview-area">
+      <div id="preview-wrapper">
+        <button id="nav-prev" class="nav-btn nav-prev" style="display:none;">&#8249;</button>
+        <div id="drop-zone" class="drop-zone">
+          <div class="drop-zone-content">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <p>ここに写真をドロップ</p>
+            <p class="drop-zone-sub">またはクリックして選択（複数可）</p>
+          </div>
+          <input type="file" id="file-input" accept="image/*" multiple hidden>
+        </div>
+        <canvas id="preview-canvas" style="display:none;"></canvas>
+        <button id="nav-next" class="nav-btn nav-next" style="display:none;">&#8250;</button>
+      </div>
+      <!-- Thumbnail Strip -->
+      <div id="thumbnail-strip" class="thumbnail-strip" style="display:none;"></div>
+    </main>
+
+    <!-- Settings Panel -->
+    <aside class="settings-panel">
+      <h1 class="app-title">Photo Frame</h1>
+
+      <!-- Upload Section -->
+      <section class="settings-section">
+        <h2 class="section-title">Photo</h2>
+        <button id="upload-btn" class="btn btn-primary">写真を選択</button>
+        <p id="file-name" class="file-name"></p>
+      </section>
+
+      <!-- Style Section -->
+      <section class="settings-section">
+        <h2 class="section-title">Style</h2>
+
+        <div class="preset-row">
+          <button class="preset-swatch active" data-bg="#ffffff" data-text="#333333" title="白 / 灰">
+            <span class="swatch-bg" style="background:#ffffff"></span>
+            <span class="swatch-text" style="background:#333333"></span>
+          </button>
+          <button class="preset-swatch" data-bg="#111111" data-text="#ffffff" title="黒 / 白">
+            <span class="swatch-bg" style="background:#111111"></span>
+            <span class="swatch-text" style="background:#ffffff"></span>
+          </button>
+          <button class="preset-swatch" data-bg="#555555" data-text="#ffffff" title="灰 / 白">
+            <span class="swatch-bg" style="background:#555555"></span>
+            <span class="swatch-text" style="background:#ffffff"></span>
+          </button>
+          <button class="preset-swatch" data-bg="#d0d0d0" data-text="#111111" title="明灰 / 黒">
+            <span class="swatch-bg" style="background:#d0d0d0"></span>
+            <span class="swatch-text" style="background:#111111"></span>
+          </button>
+        </div>
+
+        <div class="setting-row">
+          <label for="bg-color">台紙の色</label>
+          <div class="color-input-wrapper">
+            <input type="color" id="bg-color" value="#ffffff">
+            <span id="bg-color-hex" class="color-hex">#ffffff</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label for="text-color">文字色</label>
+          <div class="color-input-wrapper">
+            <input type="color" id="text-color" value="#333333">
+            <span id="text-color-hex" class="color-hex">#333333</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label for="font-select">フォント</label>
+          <select id="font-select">
+            <option value="'Noto Sans JP', sans-serif">Noto Sans JP</option>
+            <option value="'Noto Serif JP', serif">Noto Serif JP</option>
+            <option value="'Inter', sans-serif">Inter</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <label for="aspect-ratio">アスペクト比</label>
+          <select id="aspect-ratio">
+            <option value="auto" selected>Auto</option>
+            <option value="4:5">4:5</option>
+            <option value="5:4">5:4</option>
+            <option value="3:2">3:2</option>
+            <option value="2:3">2:3</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <label for="padding-range">余白</label>
+          <div class="range-wrapper">
+            <input type="range" id="padding-range" min="2" max="10" value="5" step="0.5">
+            <span id="padding-value" class="range-value">5%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Info Lines Section -->
+      <section class="settings-section">
+        <h2 class="section-title">表示情報</h2>
+        <div class="info-lines-header">
+          <span class="info-col-show">表示</span>
+          <span class="info-col-bold">太字</span>
+          <span class="info-col-label"></span>
+        </div>
+
+        <div class="info-line-row" data-key="cameraLens">
+          <input type="checkbox" class="info-show" id="show-cameraLens" checked>
+          <input type="radio" class="info-bold" name="bold-line" value="cameraLens" checked>
+          <label>カメラ / レンズ</label>
+          <input type="text" id="exif-camera" placeholder="Canon EOS R6">
+          <span class="info-separator">/</span>
+          <input type="text" id="exif-lens" placeholder="RF50mm F1.8 STM">
+        </div>
+
+        <div class="info-line-row" data-key="settings">
+          <input type="checkbox" class="info-show" id="show-settings" checked>
+          <input type="radio" class="info-bold" name="bold-line" value="settings">
+          <label>設定</label>
+          <input type="text" id="exif-settings" placeholder="50mm  f/1.8  1/250s  ISO100">
+        </div>
+
+        <div class="info-line-row" data-key="date">
+          <input type="checkbox" class="info-show" id="show-date" checked>
+          <input type="radio" class="info-bold" name="bold-line" value="date">
+          <label>撮影日</label>
+          <input type="text" id="exif-date" placeholder="2026-02-28">
+        </div>
+
+        <div class="info-line-row" data-key="author">
+          <input type="checkbox" class="info-show" id="show-author" checked>
+          <input type="radio" class="info-bold" name="bold-line" value="author">
+          <label>作者</label>
+          <input type="text" id="author-name" placeholder="Your Name">
+        </div>
+
+        <div class="info-line-row" data-key="location">
+          <input type="checkbox" class="info-show" id="show-location" checked>
+          <input type="radio" class="info-bold" name="bold-line" value="location">
+          <label>撮影場所</label>
+          <div class="input-with-action">
+            <input type="text" id="exif-location" placeholder="Tokyo, Japan">
+            <button id="location-apply-all" class="btn-apply-all" title="すべての写真に適用">ALL</button>
+          </div>
+        </div>
+
+        <div id="exif-debug"></div>
+      </section>
+
+      <!-- Download Section -->
+      <section class="settings-section">
+        <h2 class="section-title">Export</h2>
+        <div class="setting-row">
+          <label for="export-maxsize">最大辺</label>
+          <select id="export-maxsize">
+            <option value="2000">2000px</option>
+            <option value="3000" selected>3000px</option>
+            <option value="4000">4000px</option>
+            <option value="0">元サイズ</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="export-format">形式</label>
+          <select id="export-format">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG (90%)</option>
+          </select>
+        </div>
+        <button id="download-btn" class="btn btn-download" disabled>ダウンロード</button>
+        <button id="download-all-btn" class="btn btn-download-all" style="display:none;">すべてダウンロード</button>
+      </section>
+    </aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
